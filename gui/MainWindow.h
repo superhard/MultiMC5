@@ -25,6 +25,7 @@
 #include "logic/net/NetJob.h"
 
 class NewsChecker;
+class NotificationChecker;
 class QToolButton;
 class LabeledToolButton;
 class QLabel;
@@ -196,6 +197,7 @@ private:
 
 	std::shared_ptr<GenericPageProvider> m_globalSettingsProvider;
 	std::shared_ptr<NewsChecker> m_newsChecker;
+	std::shared_ptr<NotificationChecker> m_notificationChecker;
 
 	InstancePtr m_selectedInstance;
 	QString m_currentInstIcon;

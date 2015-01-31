@@ -63,7 +63,6 @@
 #include "gui/dialogs/NotificationDialog.h"
 
 #include "gui/pages/global/MultiMCPage.h"
-#include "gui/pages/global/ExternalToolsPage.h"
 #include "gui/pages/global/AccountListPage.h"
 #include "gui/pages/global/ProxyPage.h"
 #include "gui/pages/global/JavaPage.h"
@@ -105,8 +104,6 @@
 #include <logic/updater/UpdateChecker.h>
 #include <logic/updater/NotificationChecker.h>
 #include <logic/tasks/ThreadTask.h>
-
-#include "logic/tools/BaseProfiler.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
@@ -260,7 +257,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 		m_globalSettingsProvider->addPage<MinecraftPage>();
 		m_globalSettingsProvider->addPage<JavaPage>();
 		m_globalSettingsProvider->addPage<ProxyPage>();
-		m_globalSettingsProvider->addPage<ExternalToolsPage>();
 		m_globalSettingsProvider->addPage<AccountListPage>();
 	}
 
@@ -409,53 +405,6 @@ void MainWindow::showInstanceContextMenu(const QPoint &pos)
 	if (onInstance)
 		myMenu.setEnabled(m_selectedInstance->canLaunch());
 	myMenu.exec(view->mapToGlobal(pos));
-}
-
-void MainWindow::updateToolsMenu()
-{
-	if (ui->actionLaunchInstance->menu())
-	{
-		ui->actionLaunchInstance->menu()->deleteLater();
-	}
-	QMenu *launchMenu = new QMenu(this);
-	QAction *normalLaunch = launchMenu->addAction(tr("Launch"));
-	connect(normalLaunch, &QAction::triggered, [this]()
-	{ doLaunch(); });
-	launchMenu->addSeparator()->setText(tr("Profilers"));
-	for (auto profiler : MMC->profilers().values())
-	{
-		QAction *profilerAction = launchMenu->addAction(profiler->name());
-		QString error;
-		if (!profiler->check(&error))
-		{
-			profilerAction->setDisabled(true);
-			profilerAction->setToolTip(
-				tr("Profiler not setup correctly. Go into settings, \"External Tools\"."));
-		}
-		else
-		{
-			connect(profilerAction, &QAction::triggered, [this, profiler]()
-			{ doLaunch(true, profiler.get()); });
-		}
-	}
-	launchMenu->addSeparator()->setText(tr("Tools"));
-	for (auto tool : MMC->tools().values())
-	{
-		QAction *toolAction = launchMenu->addAction(tool->name());
-		QString error;
-		if (!tool->check(&error))
-		{
-			toolAction->setDisabled(true);
-			toolAction->setToolTip(
-				tr("Tool not setup correctly. Go into settings, \"External Tools\"."));
-		}
-		else
-		{
-			connect(toolAction, &QAction::triggered, [this, tool]()
-			{ tool->createDetachedTool(m_selectedInstance, this)->run(); });
-		}
-	}
-	ui->actionLaunchInstance->setMenu(launchMenu);
 }
 
 void MainWindow::repopulateAccountsMenu()
@@ -988,7 +937,6 @@ void MainWindow::on_actionSettings_triggered()
 	// FIXME: quick HACK to make this work. improve, optimize.
 	proxymodel->invalidate();
 	proxymodel->sort(0);
-	updateToolsMenu();
 	update();
 }
 
@@ -1153,7 +1101,7 @@ void MainWindow::on_actionLaunchInstanceOffline_triggered()
 	}
 }
 
-void MainWindow::doLaunch(bool online, BaseProfilerFactory *profiler)
+void MainWindow::doLaunch(bool online)
 {
 	if (!m_selectedInstance)
 		return;
@@ -1269,11 +1217,11 @@ void MainWindow::doLaunch(bool online, BaseProfilerFactory *profiler)
 			// update first if the server actually responded
 			if (session->auth_server_online)
 			{
-				updateInstance(m_selectedInstance, session, profiler);
+				updateInstance(m_selectedInstance, session);
 			}
 			else
 			{
-				launchInstance(m_selectedInstance, session, profiler);
+				launchInstance(m_selectedInstance, session);
 			}
 			tryagain = false;
 		}
@@ -1281,24 +1229,22 @@ void MainWindow::doLaunch(bool online, BaseProfilerFactory *profiler)
 	}
 }
 
-void MainWindow::updateInstance(InstancePtr instance, AuthSessionPtr session,
-								BaseProfilerFactory *profiler)
+void MainWindow::updateInstance(InstancePtr instance, AuthSessionPtr session)
 {
 	auto updateTask = instance->doUpdate();
 	if (!updateTask)
 	{
-		launchInstance(instance, session, profiler);
+		launchInstance(instance, session);
 		return;
 	}
 	ProgressDialog tDialog(this);
-	connect(updateTask.get(), &Task::succeeded, [this, instance, session, profiler]
-	{ launchInstance(instance, session, profiler); });
+	connect(updateTask.get(), &Task::succeeded, [this, instance, session]
+	{ launchInstance(instance, session); });
 	connect(updateTask.get(), SIGNAL(failed(QString)), SLOT(onGameUpdateError(QString)));
 	tDialog.exec(updateTask.get());
 }
 
-void MainWindow::launchInstance(InstancePtr instance, AuthSessionPtr session,
-								BaseProfilerFactory *profiler)
+void MainWindow::launchInstance(InstancePtr instance, AuthSessionPtr session)
 {
 	Q_ASSERT_X(instance != NULL, "launchInstance", "instance is NULL");
 	Q_ASSERT_X(session.get() != nullptr, "launchInstance", "session is NULL");
@@ -1315,59 +1261,7 @@ void MainWindow::launchInstance(InstancePtr instance, AuthSessionPtr session,
 	connect(console, SIGNAL(isClosing()), this, SLOT(instanceEnded()));
 
 	proc->arm();
-
-	if (profiler)
-	{
-		QString error;
-		if (!profiler->check(&error))
-		{
-			QMessageBox::critical(this, tr("Error"),
-								  tr("Couldn't start profiler: %1").arg(error));
-			proc->abort();
-			return;
-		}
-		BaseProfiler *profilerInstance = profiler->createProfiler(instance, this);
-		QProgressDialog dialog;
-		dialog.setMinimum(0);
-		dialog.setMaximum(0);
-		dialog.setValue(0);
-		dialog.setLabelText(tr("Waiting for profiler..."));
-		connect(&dialog, &QProgressDialog::canceled, profilerInstance,
-				&BaseProfiler::abortProfiling);
-		dialog.show();
-		connect(profilerInstance, &BaseProfiler::readyToLaunch,
-				[&dialog, this, proc](const QString & message)
-		{
-			dialog.accept();
-			QMessageBox msg;
-			msg.setText(tr("The game launch is delayed until you press the "
-						   "button. This is the right time to setup the profiler, as the "
-						   "profiler server is running now.\n\n%1").arg(message));
-			msg.setWindowTitle(tr("Waiting"));
-			msg.setIcon(QMessageBox::Information);
-			msg.addButton(tr("Launch"), QMessageBox::AcceptRole);
-			msg.exec();
-			proc->launch();
-		});
-		connect(profilerInstance, &BaseProfiler::abortLaunch,
-				[&dialog, this, proc](const QString & message)
-		{
-			dialog.accept();
-			QMessageBox msg;
-			msg.setText(tr("Couldn't start the profiler: %1").arg(message));
-			msg.setWindowTitle(tr("Error"));
-			msg.setIcon(QMessageBox::Critical);
-			msg.addButton(QMessageBox::Ok);
-			msg.exec();
-			proc->abort();
-		});
-		profilerInstance->beginProfiling(proc);
-		dialog.exec();
-	}
-	else
-	{
-		proc->launch();
-	}
+	proc->launch();
 }
 
 void MainWindow::onGameUpdateError(QString error)
@@ -1420,8 +1314,6 @@ void MainWindow::instanceChanged(const QModelIndex &current, const QModelIndex &
 		renameButton->setText(m_selectedInstance->name());
 		m_statusLeft->setText(m_selectedInstance->getStatusbarDescription());
 		updateInstanceToolIcon(m_selectedInstance->iconKey());
-
-		updateToolsMenu();
 
 		MMC->settings()->set("SelectedInstance", m_selectedInstance->id());
 	}

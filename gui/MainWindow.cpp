@@ -87,6 +87,7 @@
 
 #include "logic/net/URLConstants.h"
 #include "logic/net/NetJob.h"
+#include "logic/Env.h"
 
 #include "logic/BaseInstance.h"
 #include "logic/OneSixInstance.h"
@@ -284,7 +285,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 		{
 			for (auto profile : account->profiles())
 			{
-				auto meta = MMC->metacache()->resolveEntry("skins", profile.name + ".png");
+				auto meta = Env::getInstance().metacache()->resolveEntry("skins", profile.name + ".png");
 				auto action = CacheDownload::make(
 					QUrl("http://" + URLConstants::SKINS_BASE + profile.name + ".png"), meta);
 				skin_dls.append(action);
@@ -331,7 +332,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 		if (MMC->settings()->get("AutoUpdate").toBool())
 		{
 			auto updater = MMC->updateChecker();
-			updater->checkForUpdate(false);
+			updater->checkForUpdate(MMC->settings()->get("UpdateChannel").toString(), false);
 		}
 		m_notificationChecker.reset(new NotificationChecker());
 		connect(m_notificationChecker.get(),
@@ -693,7 +694,7 @@ void MainWindow::downloadUpdates(QString repo, int versionId, bool installOnExit
 	// Doing so is a bit complicated, because we'd have to make sure it finished downloading
 	// before actually exiting MultiMC.
 	ProgressDialog updateDlg(this);
-	DownloadUpdateTask updateTask(repo, versionId, &updateDlg);
+	DownloadUpdateTask updateTask(MMC->root(), repo, versionId, &updateDlg);
 	// If the task succeeds, install the updates.
 	if (updateDlg.exec(&updateTask))
 	{
@@ -968,7 +969,7 @@ void MainWindow::on_actionConfig_Folder_triggered()
 void MainWindow::on_actionCheckUpdate_triggered()
 {
 	auto updater = MMC->updateChecker();
-	updater->checkForUpdate(true);
+	updater->checkForUpdate(MMC->settings()->get("UpdateChannel").toString(), true);
 }
 
 template <typename T>

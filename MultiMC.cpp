@@ -187,6 +187,9 @@ MultiMC::MultiMC(int &argc, char **argv, bool test_mode) : QApplication(argc, ar
 
 	m_translationChecker.reset(new TranslationDownloader());
 
+	// load icons
+	initIcons();
+
 	// and instances
 	auto InstDirSetting = m_settings->getSetting("InstanceDir");
 	// instance path: check for problems with '!' in instance path and warn the user in the log
@@ -282,6 +285,17 @@ void MultiMC::initTranslations()
 		m_mmc_translator.reset();
 	}
 }
+
+void MultiMC::initIcons()
+{
+	auto setting = MMC->settings()->getSetting("IconsDir");
+	ENV.m_icons.reset(new IconList(QString(":/icons/instances/"), setting->get().toString()));
+	connect(setting.get(), &Setting::SettingChanged,[&](const Setting &, QVariant value)
+	{
+		ENV.m_icons->directoryChanged(value.toString());
+	});
+}
+
 
 void moveFile(const QString &oldName, const QString &newName)
 {
@@ -417,21 +431,6 @@ void MultiMC::initGlobalSettings(bool test_mode)
 	m_settings->registerSetting("SettingsGeometry", "");
 
 	m_settings->registerSetting("PagedGeometry", "");
-}
-
-std::shared_ptr<IconList> MultiMC::icons()
-{
-	if (!m_icons)
-	{
-
-		auto setting = MMC->settings()->getSetting("IconsDir");
-		m_icons.reset(new IconList(setting->get().toString()));
-		connect(setting.get(), &Setting::SettingChanged,[&](const Setting &, QVariant value)
-		{
-			m_icons->directoryChanged(value.toString());
-		});
-	}
-	return m_icons;
 }
 
 std::shared_ptr<LWJGLVersionList> MultiMC::lwjgllist()

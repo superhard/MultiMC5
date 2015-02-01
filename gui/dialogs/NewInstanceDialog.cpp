@@ -40,7 +40,7 @@ NewInstanceDialog::NewInstanceDialog(QWidget *parent)
 	layout()->setSizeConstraint(QLayout::SetFixedSize);
 	setSelectedVersion(MMC->minecraftlist()->getLatestStable(), true);
 	InstIconKey = "infinity";
-	ui->iconButton->setIcon(MMC->icons()->getIcon(InstIconKey));
+	ui->iconButton->setIcon(ENV.icons()->getIcon(InstIconKey));
 	auto groups = MMC->instances()->getGroups().toSet();
 	auto groupList = QStringList(groups.toList());
 	groupList.sort(Qt::CaseInsensitive);
@@ -130,7 +130,7 @@ void NewInstanceDialog::on_iconButton_clicked()
 	if (dlg.result() == QDialog::Accepted)
 	{
 		InstIconKey = dlg.selectedIconKey;
-		ui->iconButton->setIcon(MMC->icons()->getIcon(InstIconKey));
+		ui->iconButton->setIcon(ENV.icons()->getIcon(InstIconKey));
 	}
 }
 

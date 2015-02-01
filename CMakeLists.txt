@@ -265,6 +265,8 @@ SET(MULTIMC_SOURCES
 	gui/GuiUtil.cpp
 	gui/ColumnResizer.h
 	gui/ColumnResizer.cpp
+	gui/InstanceProxyModel.h
+	gui/InstanceProxyModel.cpp
 
 	# GUI - windows
 	gui/MainWindow.h

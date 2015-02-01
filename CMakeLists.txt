@@ -376,8 +376,6 @@ SET(MULTIMC_SOURCES
 	logic/BaseVersion.h
 	logic/BaseProcess.h
 	logic/BaseProcess.cpp
-	logic/InstanceFactory.h
-	logic/InstanceFactory.cpp
 	logic/BaseInstance.h
 	logic/BaseInstance.cpp
 	logic/Mod.h

@@ -198,7 +198,7 @@ MultiMC::MultiMC(int &argc, char **argv, bool test_mode) : QApplication(argc, ar
 		QLOG_WARN()
 			<< "Your instance path contains \'!\' and this is known to cause java problems";
 	}
-	m_instances.reset(new InstanceList(InstDirSetting->get().toString(), this));
+	m_instances.reset(new InstanceList(m_settings, InstDirSetting->get().toString(), this));
 	QLOG_INFO() << "Loading Instances...";
 	m_instances->loadList();
 	connect(InstDirSetting.get(), SIGNAL(SettingChanged(const Setting &, QVariant)),
@@ -538,6 +538,10 @@ void MultiMC::installUpdates(const QString updateFilesDir, UpdateFlags flags)
 
 void MultiMC::onExit()
 {
+	if(m_instances)
+	{
+		m_instances->saveGroupList();
+	}
 	if (m_updateOnExitPath.size())
 	{
 		installUpdates(m_updateOnExitPath, m_updateOnExitFlags);

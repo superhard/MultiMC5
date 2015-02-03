@@ -22,8 +22,6 @@
 #include "logic/BaseProcess.h"
 #include "BasePage.h"
 
-class EnabledItemFilter;
-class MinecraftProcess;
 namespace Ui
 {
 class LogPage;

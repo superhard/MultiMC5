@@ -21,7 +21,6 @@
 #include "logic/net/NetJob.h"
 #include "BasePage.h"
 
-class EnabledItemFilter;
 class ModList;
 namespace Ui
 {

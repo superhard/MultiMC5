@@ -21,7 +21,6 @@
 #include "logic/net/NetJob.h"
 #include "BasePage.h"
 
-class EnabledItemFilter;
 namespace Ui
 {
 class NotesPage;

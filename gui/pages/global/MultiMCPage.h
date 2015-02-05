@@ -63,7 +63,6 @@ private
 slots:
 	void on_instDirBrowseBtn_clicked();
 	void on_modsDirBrowseBtn_clicked();
-	void on_lwjglDirBrowseBtn_clicked();
 	void on_iconsDirBrowseBtn_clicked();
 
 	/*!

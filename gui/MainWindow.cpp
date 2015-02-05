@@ -73,7 +73,6 @@
 
 #include "logic/InstanceList.h"
 #include "logic/minecraft/MinecraftVersionList.h"
-#include "logic/minecraft/LwjglVersionList.h"
 #include "logic/icons/IconList.h"
 #include "logic/java/JavaVersionList.h"
 
@@ -304,10 +303,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 		{
 			m_versionLoadTask = MMC->minecraftlist()->getLoadTask();
 			startTask(m_versionLoadTask);
-		}
-		if (!MMC->lwjgllist()->isLoaded())
-		{
-			MMC->lwjgllist()->loadList();
 		}
 
 		m_newsChecker->reloadNews();

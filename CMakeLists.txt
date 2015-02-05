@@ -276,6 +276,10 @@ SET(MULTIMC_SOURCES
 	gui/pages/ModFolderPage.h
 	gui/pages/NotesPage.cpp
 	gui/pages/NotesPage.h
+	gui/pages/LegacyUpgradePage.cpp
+	gui/pages/LegacyUpgradePage.h
+	gui/pages/LegacyJarModPage.cpp
+	gui/pages/LegacyJarModPage.h
 	gui/pages/LogPage.cpp
 	gui/pages/LogPage.h
 	gui/pages/InstanceSettingsPage.cpp
@@ -448,6 +452,12 @@ SET(MULTIMC_SOURCES
 	logic/status/StatusChecker.h
 	logic/status/StatusChecker.cpp
 
+	# legacy instances
+	logic/minecraft/LegacyInstance.h
+	logic/minecraft/LegacyInstance.cpp
+	logic/minecraft/LegacyUpdate.h
+	logic/minecraft/LegacyUpdate.cpp
+
 	# OneSix instances
 	logic/minecraft/OneSixUpdate.h
 	logic/minecraft/OneSixUpdate.cpp
@@ -511,6 +521,8 @@ SET(MULTIMC_SOURCES
 
 	logic/InstanceList.h
 	logic/InstanceList.cpp
+	logic/minecraft/LwjglVersionList.h
+	logic/minecraft/LwjglVersionList.cpp
 
 	# the screenshots feature
 	logic/screenshots/Screenshot.h
@@ -595,6 +607,8 @@ SET(MULTIMC_UIS
 	# Option pages
 	gui/pages/VersionPage.ui
 	gui/pages/ModFolderPage.ui
+	gui/pages/LegacyUpgradePage.ui
+	gui/pages/LegacyJarModPage.ui
 	gui/pages/LogPage.ui
 	gui/pages/InstanceSettingsPage.ui
 	gui/pages/NotesPage.ui

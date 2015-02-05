@@ -19,7 +19,7 @@ class VersionFile : public ProfilePatch
 {
 public: /* methods */
 	static VersionFilePtr fromJson(const QJsonDocument &doc, const QString &filename,
-								   const bool requireOrder);
+								   const bool requireOrder, const bool isFTB = false);
 	QJsonDocument toJson(bool saveOrder);
 
 	virtual void applyTo(MinecraftProfile *version) override;

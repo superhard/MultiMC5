@@ -86,7 +86,7 @@ bool readOverrideOrders(QString path, PatchOrder &order)
 	return true;
 }
 
-VersionFilePtr parseJsonFile(const QFileInfo &fileInfo, const bool requireOrder)
+VersionFilePtr parseJsonFile(const QFileInfo &fileInfo, const bool requireOrder, bool isFTB)
 {
 	QFile file(fileInfo.absoluteFilePath());
 	if (!file.open(QFile::ReadOnly))
@@ -103,7 +103,7 @@ VersionFilePtr parseJsonFile(const QFileInfo &fileInfo, const bool requireOrder)
 				.arg(fileInfo.fileName(), error.errorString())
 				.arg(error.offset));
 	}
-	return VersionFile::fromJson(doc, file.fileName(), requireOrder);
+	return VersionFile::fromJson(doc, file.fileName(), requireOrder, isFTB);
 }
 
 VersionFilePtr parseBinaryJsonFile(const QFileInfo &fileInfo)
@@ -122,7 +122,7 @@ VersionFilePtr parseBinaryJsonFile(const QFileInfo &fileInfo)
 		throw JSONValidationError(
 			QObject::tr("Unable to process the version file %1.").arg(fileInfo.fileName()));
 	}
-	return VersionFile::fromJson(doc, file.fileName(), false);
+	return VersionFile::fromJson(doc, file.fileName(), false, false);
 }
 
 void removeLwjglFromPatch(VersionFilePtr patch)

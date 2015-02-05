@@ -14,7 +14,7 @@ bool writeOverrideOrders(QString path, const PatchOrder &order);
 
 
 /// Parse a version file in JSON format
-VersionFilePtr parseJsonFile(const QFileInfo &fileInfo, const bool requireOrder);
+VersionFilePtr parseJsonFile(const QFileInfo &fileInfo, const bool requireOrder, bool isFTB = false);
 
 /// Parse a version file in binary JSON format
 VersionFilePtr parseBinaryJsonFile(const QFileInfo &fileInfo);

@@ -34,7 +34,7 @@ int findLibraryByName(QList<OneSixLibraryPtr> haystack, const GradleSpecifier &n
 }
 
 VersionFilePtr VersionFile::fromJson(const QJsonDocument &doc, const QString &filename,
-									 const bool requireOrder)
+									 const bool requireOrder, const bool isFTB)
 {
 	VersionFilePtr out(new VersionFile());
 	if (doc.isEmpty() || doc.isNull())
@@ -84,7 +84,11 @@ VersionFilePtr VersionFile::fromJson(const QJsonDocument &doc, const QString &fi
 		return QString();
 	};
 
-	readString("id", out->id);
+	// FIXME: This should be ignored when applying.
+	if (!isFTB)
+	{
+		readString("id", out->id);
+	}
 
 	readString("mainClass", out->mainClass);
 	readString("appletClass", out->appletClass);
@@ -139,13 +143,24 @@ VersionFilePtr VersionFile::fromJson(const QJsonDocument &doc, const QString &fi
 
 	if (root.contains("libraries"))
 	{
-		out->shouldOverwriteLibs = true;
+		// FIXME: This should be done when applying.
+		out->shouldOverwriteLibs = !isFTB;
 		for (auto libVal : ensureArray(root.value("libraries")))
 		{
 			auto libObj = ensureObject(libVal);
 
 			auto lib = RawLibrary::fromJson(libObj, filename);
-			out->overwriteLibs.append(lib);
+			// FIXME: This should be done when applying.
+			if (isFTB)
+			{
+				lib->m_hint = "local";
+				lib->insertType = RawLibrary::Prepend;
+				out->addLibs.prepend(lib);
+			}
+			else
+			{
+				out->overwriteLibs.append(lib);
+			}
 		}
 	}
 

@@ -36,6 +36,8 @@
 
 #include "logic/updater/UpdateChecker.h"
 
+#include "logic/tools/BaseProfiler.h"
+
 #include "logic/settings/SettingsObject.h"
 #include "MultiMC.h"
 

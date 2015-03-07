@@ -19,6 +19,11 @@ public:
 	{
 		m_ptr = other.m_ptr;
 	}
+	template<typename Derived>
+	QObjectPtr(const QObjectPtr<Derived> &other)
+	{
+		m_ptr = other.getInternal();
+	}
 
 public:
 	void reset(T * wrap)
@@ -45,6 +50,10 @@ public:
 	operator bool() const
 	{
 		return m_ptr.get() != nullptr;
+	}
+	std::shared_ptr<T> getInternal() const
+	{
+		return m_ptr;
 	}
 
 private:

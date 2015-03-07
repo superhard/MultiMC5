@@ -23,6 +23,8 @@ class ProgressProvider : public QObject
 protected:
 	explicit ProgressProvider(QObject *parent = 0) : QObject(parent)
 	{
+		connect(this, &ProgressProvider::succeeded, this, &ProgressProvider::finished);
+		connect(this, &ProgressProvider::failed, this, &ProgressProvider::finished);
 	}
 signals:
 	void started();
@@ -30,6 +32,7 @@ signals:
 	void succeeded();
 	void failed(QString reason);
 	void status(QString status);
+	void finished();
 
 public:
 	virtual ~ProgressProvider() {}

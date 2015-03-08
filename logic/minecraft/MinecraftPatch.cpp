@@ -10,9 +10,6 @@
 #include "minecraft/JarMod.h"
 #include "ParseUtils.h"
 
-#include "MMCJson.h"
-using namespace MMCJson;
-
 #include "VersionBuildError.h"
 
 int findLibraryByName(QList<RawLibraryPtr> haystack, const GradleSpecifier &needle)

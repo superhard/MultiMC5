@@ -14,26 +14,26 @@
  */
 
 #include <QtXml>
-#include "MMCJson.h"
 #include <QtAlgorithms>
 #include <QtNetwork>
 
 #include "Env.h"
-#include "MMCError.h"
+#include "Exception.h"
 
 #include "MetaPackageList.h"
 #include "net/URLConstants.h"
 
+#include "Json.h"
 #include "ParseUtils.h"
 #include "MetaPackage.h"
 #include "FileStore.h"
 
 #include <pathutils.h>
 
-class ListLoadError : public MMCError
+class ListLoadError : public Exception
 {
 public:
-	ListLoadError(QString cause) : MMCError(cause) {};
+	ListLoadError(QString cause) : Exception(cause) {}
 	virtual ~ListLoadError() noexcept
 	{
 	}
@@ -92,7 +92,7 @@ slots:
 			}
 			m_list->loadListFromJSON(jsonDoc, MetaPackageList::RemoteLoaded);
 		}
-		catch (MMCError &e)
+		catch (Exception &e)
 		{
 			emitFailed(e.cause());
 			return;

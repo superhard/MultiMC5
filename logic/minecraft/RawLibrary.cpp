@@ -1,7 +1,6 @@
-#include "MMCJson.h"
-using namespace MMCJson;
-
 #include "RawLibrary.h"
+
+#include <QDebug>
 
 QStringList RawLibrary::files() const
 {

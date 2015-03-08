@@ -1,10 +1,10 @@
 #include "OneSixFormat.h"
 #include "minecraft/Package.h"
-#include "MMCJson.h"
 #include "ParseUtils.h"
+
 #include <QJsonArray>
 
-using namespace MMCJson;
+#include "Json.h"
 
 RuleAction RuleAction_fromString(QString name)
 {
@@ -59,11 +59,13 @@ QList<std::shared_ptr<Rule>> readLibraryRules(const QJsonObject &objectWithRules
 
 RawLibraryPtr readRawLibrary(const QJsonObject &libObj, const QString &filename)
 {
+	using namespace Json;
+
 	RawLibraryPtr out(new RawLibrary());
 	if (!libObj.contains("name"))
 	{
-		throw JSONValidationError(filename +
-								  "contains a library that doesn't have a 'name' field");
+		throw JsonException(filename +
+							"contains a library that doesn't have a 'name' field");
 	}
 	out->m_name = libObj.value("name").toString();
 
@@ -123,10 +125,12 @@ RawLibraryPtr readRawLibrary(const QJsonObject &libObj, const QString &filename)
 
 RawLibraryPtr OneSixFormat::readRawLibraryPlus(const QJsonObject &libObj, const QString &filename)
 {
+	using namespace Json;
+
 	auto lib = readRawLibrary(libObj, filename);
 	if (libObj.contains("insert"))
 	{
-		QJsonValue insertVal = ensureExists(libObj.value("insert"), "library insert rule");
+		QJsonValue insertVal = ensureJsonValue(libObj.value("insert"), "library insert rule");
 		if (insertVal.isString())
 		{
 			// it's just a simple string rule. OK.
@@ -149,7 +153,7 @@ RawLibraryPtr OneSixFormat::readRawLibraryPlus(const QJsonObject &libObj, const 
 			}
 			else
 			{
-				throw JSONValidationError("A '+' library in " + filename + " contains an invalid insert type");
+				throw JsonException("A '+' library in " + filename + " contains an invalid insert type");
 			}
 		}
 		else if (insertVal.isObject())
@@ -160,19 +164,19 @@ RawLibraryPtr OneSixFormat::readRawLibraryPlus(const QJsonObject &libObj, const 
 			QJsonObject insertObj = insertVal.toObject();
 			if (insertObj.isEmpty())
 			{
-				throw JSONValidationError("Empty compound insert rule in " + filename);
+				throw JsonException("Empty compound insert rule in " + filename);
 			}
 			QString insertString = insertObj.keys().first();
 			// really, only replace makes sense in combination with
 			if(insertString != "replace")
 			{
-				throw JSONValidationError("Compound insert rule is not 'replace' in " + filename);
+				throw JsonException("Compound insert rule is not 'replace' in " + filename);
 			}
 			lib->insertData = insertObj.value(insertString).toString();
 		}
 		else
 		{
-			throw JSONValidationError("A '+' library in " + filename + " contains an unknown/invalid insert rule");
+			throw JsonException("A '+' library in " + filename + " contains an unknown/invalid insert rule");
 		}
 	}
 	if (libObj.contains("MMC-depend"))
@@ -188,7 +192,7 @@ RawLibraryPtr OneSixFormat::readRawLibraryPlus(const QJsonObject &libObj, const 
 		}
 		else
 		{
-			throw JSONValidationError("A '+' library in " + filename + " contains an invalid depend type");
+			throw JsonException("A '+' library in " + filename + " contains an invalid depend type");
 		}
 	}
 	return lib;
@@ -196,14 +200,16 @@ RawLibraryPtr OneSixFormat::readRawLibraryPlus(const QJsonObject &libObj, const 
 
 PackagePtr OneSixFormat::fromJson(const QJsonDocument& doc, const QString& filename, const bool requireOrder)
 {
+	using namespace Json;
+
 	PackagePtr out(new Package());
 	if (doc.isEmpty() || doc.isNull())
 	{
-		throw JSONValidationError(filename + " is empty or null");
+		throw JsonException(filename + " is empty or null");
 	}
 	if (!doc.isObject())
 	{
-		throw JSONValidationError(filename + " is not an object");
+		throw JsonException(filename + " is not an object");
 	}
 
 	QJsonObject root = doc.object();
@@ -293,7 +299,7 @@ PackagePtr OneSixFormat::fromJson(const QJsonDocument& doc, const QString& filen
 		int minimumLauncherVersion = ensureInteger(root.value("minimumLauncherVersion"));
 		if(minimumLauncherVersion > CURRENT_MINIMUM_LAUNCHER_VERSION)
 		{
-			throw JSONValidationError(QString("patch %1 is in a newer format than MultiMC can handle").arg(filename));
+			throw JsonException(QString("patch %1 is in a newer format than MultiMC can handle").arg(filename));
 		}
 	}
 
@@ -394,7 +400,7 @@ JarmodPtr OneSixFormat::fromJson(const QJsonObject &libObj, const QString &filen
 	JarmodPtr out(new Jarmod());
 	if (!libObj.contains("name"))
 	{
-		throw JSONValidationError(filename +
+		throw Json::JsonException(filename +
 								  "contains a jarmod that doesn't have a 'name' field");
 	}
 	out->name = libObj.value("name").toString();

@@ -12,7 +12,6 @@ class MetaPackageList;
 class HttpMetaCache;
 class SettingsObject;
 class InstanceList;
-class MojangAccountList;
 class IconList;
 class QNetworkAccessManager;
 class ForgeVersionList;
@@ -85,12 +84,6 @@ public:
 		return m_instances;
 	}
 
-	// APPLICATION ONLY
-	std::shared_ptr<MojangAccountList> accounts()
-	{
-		return m_accounts;
-	}
-
 	std::shared_ptr<IconRegistry> iconRegistry()
 	{
 		return m_iconRegistry;
@@ -149,7 +142,6 @@ private:
 	std::shared_ptr<SettingsObject> m_settings;
 	std::shared_ptr<InstanceList> m_instances;
 	std::shared_ptr<UpdateChecker> m_updateChecker;
-	std::shared_ptr<MojangAccountList> m_accounts;
 	std::shared_ptr<IconRegistry> m_iconRegistry;
 	std::shared_ptr<AccountModel> m_accountsModel;
 	std::shared_ptr<LiteLoaderVersionList> m_liteloaderlist;

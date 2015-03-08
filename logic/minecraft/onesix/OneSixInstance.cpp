@@ -16,7 +16,7 @@
 #include <QIcon>
 #include <pathutils.h>
 #include <QDebug>
-#include "MMCError.h"
+#include "Exception.h"
 
 #include "minecraft/onesix/OneSixInstance.h"
 #include "minecraft/onesix/OneSixUpdate.h"
@@ -128,7 +128,7 @@ QString replaceTokensIn(QString text, QMap<QString, QString> with)
 	return result;
 }
 
-QStringList OneSixInstance::processMinecraftArgs(AuthSessionPtr session)
+QStringList OneSixInstance::processMinecraftArgs(MojangAuthSessionPtr session)
 {
 	QString args_pattern = m_version->resources.minecraftArguments;
 	for (auto tweaker : m_version->resources.tweakers)
@@ -166,7 +166,7 @@ QStringList OneSixInstance::processMinecraftArgs(AuthSessionPtr session)
 	return parts;
 }
 
-BaseProcess *OneSixInstance::prepareForLaunch(AuthSessionPtr session)
+BaseProcess *OneSixInstance::prepareForLaunch(MojangAuthSessionPtr session)
 {
 	QString launchScript;
 	QIcon icon = ENV.icons()->getIcon(iconKey());
@@ -309,7 +309,7 @@ void OneSixInstance::reloadProfile()
 	catch (VersionIncomplete &error)
 	{
 	}
-	catch (MMCError &error)
+	catch (Exception &error)
 	{
 		m_version->clear();
 		setFlag(VersionBrokenFlag);

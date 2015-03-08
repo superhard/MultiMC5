@@ -80,6 +80,6 @@ void BaseConfigObject::loadNow()
 	}
 	catch (Exception &e)
 	{
-		qWarning() << "Error loading" << m_filename << ":" << e.message();
+		qWarning() << "Error loading" << m_filename << ":" << e.cause();
 	}
 }

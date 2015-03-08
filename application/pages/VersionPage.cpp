@@ -40,9 +40,9 @@
 #include "tasks/Task.h"
 
 #include "minecraft/MinecraftProfile.h"
-#include "auth/yggdrasil/MojangAccountList.h"
 #include "minecraft/Mod.h"
 #include "icons/IconList.h"
+#include "Exception.h"
 
 
 QIcon VersionPage::icon() const
@@ -108,7 +108,7 @@ bool VersionPage::reloadMinecraftProfile()
 		m_inst->reloadProfile();
 		return true;
 	}
-	catch (MMCError &e)
+	catch (Exception &e)
 	{
 		QMessageBox::critical(this, tr("Error"), e.cause());
 		return false;
@@ -184,7 +184,7 @@ void VersionPage::on_moveLibraryUpBtn_clicked()
 		const int row = ui->libraryTreeView->selectionModel()->selectedRows().first().row();
 		m_version->move(row, MinecraftProfile::MoveUp);
 	}
-	catch (MMCError &e)
+	catch (Exception &e)
 	{
 		QMessageBox::critical(this, tr("Error"), e.cause());
 	}
@@ -201,7 +201,7 @@ void VersionPage::on_moveLibraryDownBtn_clicked()
 		const int row = ui->libraryTreeView->selectionModel()->selectedRows().first().row();
 		m_version->move(row, MinecraftProfile::MoveDown);
 	}
-	catch (MMCError &e)
+	catch (Exception &e)
 	{
 		QMessageBox::critical(this, tr("Error"), e.cause());
 	}

@@ -5,7 +5,6 @@
 #include <QDateTime>
 #include <memory>
 #include "minecraft/MinecraftPatch.h"
-#include "MMCError.h"
 
 class Package;
 

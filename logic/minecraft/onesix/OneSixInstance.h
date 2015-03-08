@@ -58,7 +58,7 @@ public:
 	virtual QString instanceConfigFolder() const override;
 
 	virtual std::shared_ptr<Task> doUpdate() override;
-	virtual BaseProcess *prepareForLaunch(AuthSessionPtr account) override;
+	virtual BaseProcess *prepareForLaunch(MojangAuthSessionPtr account) override;
 
 	virtual void cleanupAfterRun() override;
 
@@ -91,7 +91,7 @@ signals:
 	void versionReloaded();
 
 private:
-	QStringList processMinecraftArgs(AuthSessionPtr account);
+	QStringList processMinecraftArgs(MojangAuthSessionPtr account);
 
 protected:
 	std::shared_ptr<MinecraftProfile> m_version;

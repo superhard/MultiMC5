@@ -14,7 +14,7 @@ public:
 		qCritical() << "Exception:" << message;
 	}
 	Exception(const Exception &other)
-		: std::exception(), m_message(other.message())
+		: std::exception(), m_message(other.cause())
 	{
 	}
 	virtual ~Exception() noexcept {}
@@ -22,7 +22,7 @@ public:
 	{
 		return m_message.toLatin1().constData();
 	}
-	QString message() const
+	QString cause() const
 	{
 		return m_message;
 	}

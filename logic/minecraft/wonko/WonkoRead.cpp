@@ -2,14 +2,15 @@
 #include "../onesix/OneSixFormat.h"
 
 #include "minecraft/Package.h"
-#include "MMCJson.h"
 #include "ParseUtils.h"
 #include <QJsonArray>
 
-using namespace MMCJson;
+#include "Json.h"
 
 PackagePtr WonkoFormat::fromJson(const QJsonDocument &doc, const QString &filename)
 {
+	using namespace Json;
+
 	auto file = std::make_shared<Package>();
 	// read metadata -- not sure if we need to here.
 	auto json = doc.object();
@@ -17,7 +18,7 @@ PackagePtr WonkoFormat::fromJson(const QJsonDocument &doc, const QString &filena
 		auto formatVersion = ensureInteger(json.value("formatVersion"));
 		if(formatVersion > CURRENT_WONKO_VERSION)
 		{
-			throw JSONValidationError(QObject::tr("Unknown wonko format version: %1").arg(formatVersion));
+			throw JsonException(QObject::tr("Unknown wonko format version: %1").arg(formatVersion));
 		}
 		file->name = file->fileId = ensureString(json.value("uid"));
 		file->setPatchFilename(filename);

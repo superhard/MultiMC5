@@ -27,7 +27,7 @@ public:
 	{
 		return instanceRoot();
 	};
-	virtual BaseProcess* prepareForLaunch(AuthSessionPtr)
+	virtual BaseProcess* prepareForLaunch(MojangAuthSessionPtr)
 	{
 		return nullptr;
 	}

@@ -160,7 +160,7 @@ void CacheDownload::downloadFinished()
 			}
 			catch (Exception &e)
 			{
-				qCritical() << "Download failed because:" << e.message();
+				qCritical() << "Download failed because:" << e.cause();
 				m_reply.reset();
 				m_status = Job_Failed;
 				emit failed(m_index_within_job);

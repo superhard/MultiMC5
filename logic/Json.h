@@ -9,6 +9,7 @@
 #include <QUrl>
 #include <QDir>
 #include <QUuid>
+#include <QVariant>
 
 #include "Exception.h"
 
@@ -33,6 +34,25 @@ QJsonDocument ensureDocument(const QByteArray &data);
 QJsonDocument ensureDocument(const QString &filename);
 QJsonObject ensureObject(const QJsonDocument &doc, const QString &what = "Document");
 QJsonArray ensureArray(const QJsonDocument &doc, const QString &what = "Document");
+
+/////////////////// WRITING ////////////////////
+
+void writeString(QJsonObject & to, const QString &key, const QString &value);
+void writeStringList(QJsonObject & to, const QString &key, const QStringList &values);
+
+template <typename IO, typename T>
+void writeObjectList(QJsonObject & to, QString key, QList<T> values)
+{
+	if (!values.isEmpty())
+	{
+		QJsonArray array;
+		for (auto value: values)
+		{
+			array.append(IO::toJson(value));
+		}
+		to.insert(key, array);
+	}
+}
 
 template<typename T>
 QJsonValue toJson(const T &t)
@@ -63,161 +83,24 @@ QJsonArray toJsonArray(const QList<T> &container)
 	return array;
 }
 
-// template magic!
-
-// all of the following templated functions that start with std::enabled_if... are the backbone
-// of the conversions. they are called by the higher-level functions (see further down) and
-// handle type-specific conversions. if you want to add support for another type, take a look at
-// the following functions
-template <typename T>
-typename std::enable_if<std::is_same<T, QString>::value, T>::type
-ensureIsType(const QJsonValue &value, const Requirement = Required,
-			 const QString &what = "Value")
-{
-	if (!value.isString())
-	{
-		throw JsonException(what + " is not a string");
-	}
-	return value.toString();
-}
+////////////////// READING ////////////////////
 
 template <typename T>
-typename std::enable_if<std::is_same<T, bool>::value, T>::type
-ensureIsType(const QJsonValue &value, const Requirement = Required,
-			 const QString &what = "Value")
-{
-	if (!value.isBool())
-	{
-		throw JsonException(what + " is not a bool");
-	}
-	return value.toBool();
-}
+T ensureIsType(const QJsonValue &value, const Requirement requirement = Required, const QString &what = "Value");
 
-template <typename T>
-typename std::enable_if<std::is_same<T, double>::value, T>::type
-ensureIsType(const QJsonValue &value, const Requirement = Required,
-			 const QString &what = "Value")
-{
-	if (!value.isDouble())
-	{
-		throw JsonException(what + " is not a double");
-	}
-	return value.toDouble();
-}
-
-template <typename T>
-typename std::enable_if<std::is_same<T, int>::value, T>::type
-ensureIsType(const QJsonValue &value, const Requirement requirement = Required,
-			 const QString &what = "Value")
-{
-	const double doubl = ensureIsType<double>(value, requirement, what);
-	if (fmod(doubl, 1) != 0)
-	{
-		throw JsonException(what + " is not an integer");
-	}
-	return int(doubl);
-}
-
-template <typename T>
-typename std::enable_if<std::is_same<T, QDateTime>::value, T>::type
-ensureIsType(const QJsonValue &value, const Requirement requirement = Required,
-			 const QString &what = "Value")
-{
-	const QString string = ensureIsType<QString>(value, requirement, what);
-	const QDateTime datetime = QDateTime::fromString(string, Qt::ISODate);
-	if (!datetime.isValid())
-	{
-		throw JsonException(what + " is not a ISO formatted date/time value");
-	}
-	return datetime;
-}
-
-template <typename T>
-typename std::enable_if<std::is_same<T, QUrl>::value, T>::type
-ensureIsType(const QJsonValue &value, const Requirement requirement = Required,
-			 const QString &what = "Value")
-{
-	const QString string = ensureIsType<QString>(value, requirement, what);
-	if (string.isEmpty())
-	{
-		return QUrl();
-	}
-	const QUrl url = QUrl(string, QUrl::StrictMode);
-	if (!url.isValid())
-	{
-		throw JsonException(what + " is not a correctly formatted URL");
-	}
-	return url;
-}
-
-template <typename T>
-typename std::enable_if<std::is_same<T, QByteArray>::value, T>::type
-ensureIsType(const QJsonValue &value, const Requirement requirement = Required,
-			 const QString &what = "Value")
-{
-	const QString string = ensureIsType<QString>(value, requirement, what);
-	// ensure that the string can be safely cast to Latin1
-	if (string != QString::fromLatin1(string.toLatin1()))
-	{
-		throw JsonException(what + " is not encodable as Latin1");
-	}
-	return QByteArray::fromHex(string.toLatin1());
-}
-
-template <typename T>
-typename std::enable_if<std::is_same<T, QDir>::value, T>::type
-ensureIsType(const QJsonValue &value, const Requirement requirement = Required, const QString &what = "Value")
-{
-	const QString string = ensureIsType<QString>(value, requirement, what);
-	return QDir::current().absoluteFilePath(string);
-}
-
-template <typename T>
-typename std::enable_if<std::is_same<T, QUuid>::value, T>::type
-ensureIsType(const QJsonValue &value, const Requirement requirement = Required, const QString &what = "Value")
-{
-	const QString string = ensureIsType<QString>(value, requirement, what);
-	const QUuid uuid = QUuid(string);
-	if (uuid.toString() != string) // converts back => valid
-	{
-		throw JsonException(what + " is not a valid UUID");
-	}
-	return uuid;
-}
-
-template <typename T>
-typename std::enable_if<std::is_same<T, QJsonObject>::value, T>::type
-ensureIsType(const QJsonValue &value, const Requirement requirement = Required, const QString &what = "Value")
-{
-	if (!value.isObject())
-	{
-		throw JsonException(what + " is not an object");
-	}
-	return value.toObject();
-}
-
-template <typename T>
-typename std::enable_if<std::is_same<T, QJsonArray>::value, T>::type
-ensureIsType(const QJsonValue &value, const Requirement requirement = Required, const QString &what = "Value")
-{
-	if (!value.isArray())
-	{
-		throw JsonException(what + " is not an array");
-	}
-	return value.toArray();
-}
-
-template <typename T>
-typename std::enable_if<std::is_same<T, QVariant>::value, T>::type
-ensureIsType(const QJsonValue &value, const Requirement requirement = Required, const QString &what = "Value")
-{
-	if (value.isNull() || value.isUndefined())
-	{
-		throw JsonException(what + " is null or undefined");
-	}
-	return value.toVariant();
-}
-
+template<> double ensureIsType<double>(const QJsonValue &value, const Requirement, const QString &what);
+template<> bool ensureIsType<bool>(const QJsonValue &value, const Requirement, const QString &what);
+template<> int ensureIsType<int>(const QJsonValue &value, const Requirement, const QString &what);
+template<> QJsonObject ensureIsType<QJsonObject>(const QJsonValue &value, const Requirement, const QString &what);
+template<> QJsonArray ensureIsType<QJsonArray>(const QJsonValue &value, const Requirement, const QString &what);
+template<> QJsonValue ensureIsType<QJsonValue>(const QJsonValue &value, const Requirement, const QString &what);
+template<> QByteArray ensureIsType<QByteArray>(const QJsonValue &value, const Requirement, const QString &what);
+template<> QDateTime ensureIsType<QDateTime>(const QJsonValue &value, const Requirement, const QString &what);
+template<> QVariant ensureIsType<QVariant>(const QJsonValue &value, const Requirement, const QString &what);
+template<> QString ensureIsType<QString>(const QJsonValue &value, const Requirement, const QString &what);
+template<> QUuid ensureIsType<QUuid>(const QJsonValue &value, const Requirement, const QString &what);
+template<> QDir ensureIsType<QDir>(const QJsonValue &value, const Requirement, const QString &what);
+template<> QUrl ensureIsType<QUrl>(const QJsonValue &value, const Requirement, const QString &what);
 
 // the following functions are higher level functions, that make use of the above functions for
 // type conversion
@@ -324,6 +207,7 @@ QList<T> ensureIsArrayOf(const QJsonObject &parent, const QString &key,
 
 JSON_HELPERFUNCTIONS(Array, QJsonArray)
 JSON_HELPERFUNCTIONS(Object, QJsonObject)
+JSON_HELPERFUNCTIONS(JsonValue, QJsonValue)
 JSON_HELPERFUNCTIONS(String, QString)
 JSON_HELPERFUNCTIONS(Boolean, bool)
 JSON_HELPERFUNCTIONS(Double, double)

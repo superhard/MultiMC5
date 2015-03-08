@@ -1,10 +1,10 @@
 #include "OneSixFormat.h"
 #include "minecraft/Package.h"
-#include "MMCJson.h"
 #include "ParseUtils.h"
 #include <QJsonArray>
+#include <QDebug>
 
-using namespace MMCJson;
+#include "Json.h"
 
 QJsonObject OneSixFormat::toJson(std::shared_ptr<ImplicitRule> rule)
 {
@@ -92,6 +92,8 @@ QJsonObject OneSixFormat::toJson(RawLibraryPtr raw)
 
 QJsonDocument OneSixFormat::toJson(PackagePtr file, bool saveOrder)
 {
+	using namespace Json;
+
 	QJsonObject root;
 	if (saveOrder)
 	{
@@ -166,6 +168,6 @@ QJsonDocument OneSixFormat::toJson(PackagePtr file, bool saveOrder)
 QJsonObject OneSixFormat::toJson(JarmodPtr mod)
 {
 	QJsonObject out;
-	writeString(out, "name", mod->name);
+	Json::writeString(out, "name", mod->name);
 	return out;
 }

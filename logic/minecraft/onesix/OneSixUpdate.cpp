@@ -33,6 +33,7 @@
 #include "net/URLConstants.h"
 #include "minecraft/AssetsUtils.h"
 #include "minecraft/JarUtils.h"
+#include "Exception.h"
 #include <tasks/SequentialTask.h>
 
 OneSixUpdate::OneSixUpdate(OneSixInstance *inst, QObject *parent) : Task(parent), m_inst(inst)
@@ -179,7 +180,7 @@ void OneSixUpdate::jarlibStart()
 	{
 		inst->reloadProfile();
 	}
-	catch (MMCError &e)
+	catch (Exception &e)
 	{
 		emitFailed(e.cause());
 		return;

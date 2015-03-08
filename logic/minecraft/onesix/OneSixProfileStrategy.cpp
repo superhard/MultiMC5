@@ -6,13 +6,14 @@
 #include "MetaPackageList.h"
 #include "Env.h"
 #include <MetaPackage.h>
-#include <MMCJson.h>
 
 #include <pathutils.h>
 #include <QDir>
 #include <QUuid>
 #include <QJsonDocument>
 #include <QJsonArray>
+
+#include "Json.h"
 
 OneSixProfileStrategy::OneSixProfileStrategy(OneSixInstance* instance)
 {
@@ -90,14 +91,14 @@ void OneSixProfileStrategy::loadBuiltinPatch(QString uid, QString name, QString 
 		QFile file(path);
 		if (!file.open(QFile::ReadOnly))
 		{
-			throw JSONValidationError(QObject::tr("Unable to open the version file %1: %2.")
+			throw Json::JsonException(QObject::tr("Unable to open the version file %1: %2.")
 										.arg(file.fileName(), file.errorString()));
 		}
 		QJsonParseError error;
 		QJsonDocument doc = QJsonDocument::fromJson(file.readAll(), &error);
 		if (error.error != QJsonParseError::NoError)
 		{
-			throw JSONValidationError(
+			throw Json::JsonException(
 				QObject::tr("Unable to process the version file %1: %2 at %3.")
 					.arg(file.fileName(), error.errorString())
 					.arg(error.offset));
